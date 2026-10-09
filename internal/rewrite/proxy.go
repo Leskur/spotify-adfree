@@ -13,6 +13,7 @@ import (
 	"golang.org/x/net/http2"
 
 	"github.com/leskur/spotify-ad-free/internal/rules"
+	"github.com/leskur/spotify-ad-free/internal/sysproxy"
 )
 
 const DefaultPort = 18513
@@ -150,8 +151,12 @@ func (s *Server) handleConnect(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) serveProxy(rw http.ResponseWriter, req *http.Request, hostname string) {
 	target, _ := url.Parse("https://" + hostname)
+	listenPort := s.Port()
 	proxy := httputil.NewSingleHostReverseProxy(target)
 	proxy.Transport = &http.Transport{
+		Proxy: func(r *http.Request) (*url.URL, error) {
+			return sysproxy.HTTP(r, listenPort)
+		},
 		TLSClientConfig: &tls.Config{
 			ServerName: hostname,
 			NextProtos: []string{"h2", "http/1.1"},
