@@ -1,0 +1,9 @@
+/bin/
+/dist/
+/tmp/
+*.exe
+*.syso
+
+.state/
+*.log
+.DS_Store
