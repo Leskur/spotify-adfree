@@ -168,7 +168,3 @@ func (a *App) ProxyPort() int {
 	}
 	return rewrite.DefaultPort
 }
-
-func (a *App) ProxyAddr() string {
-	return net.JoinHostPort("127.0.0.1", fmt.Sprintf("%d", a.ProxyPort()))
-}
