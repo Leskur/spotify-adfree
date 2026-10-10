@@ -14,11 +14,8 @@ const (
 
 // Paths 返回 Spotify prefs 与我们的状态文件路径。
 type Paths struct {
-	Prefs                string
-	Backup               string
-	Managed              string
-	QuitSpotifyOnExit    string
-	StartSpotifyOnLaunch string
+	Prefs  string
+	Backup string
 }
 
 func ResolvePaths(stateDir string) (Paths, error) {
@@ -27,63 +24,13 @@ func ResolvePaths(stateDir string) (Paths, error) {
 		return Paths{}, err
 	}
 	return Paths{
-		Prefs:                filepath.Join(roaming, "Spotify", "prefs"),
-		Backup:               filepath.Join(stateDir, "spotify-prefs.bak"),
-		Managed:              filepath.Join(stateDir, "spotify-proxy-managed"),
-		QuitSpotifyOnExit:    filepath.Join(stateDir, "quit-spotify-on-exit"),
-		StartSpotifyOnLaunch: filepath.Join(stateDir, "start-spotify-on-launch"),
+		Prefs:  filepath.Join(roaming, "Spotify", "prefs"),
+		Backup: filepath.Join(stateDir, "spotify-prefs.bak"),
 	}, nil
 }
 
 func OurAddr(port int) string {
 	return fmt.Sprintf("127.0.0.1:%d@http", port)
-}
-
-func (p Paths) LoadManaged() bool {
-	b, err := os.ReadFile(p.Managed)
-	if err != nil {
-		return false
-	}
-	s := strings.TrimSpace(string(b))
-	return s == "1" || strings.EqualFold(s, "true")
-}
-
-func (p Paths) SaveManaged(on bool) error {
-	return writeFlag(p.Managed, on)
-}
-
-func (p Paths) LoadQuitSpotifyOnExit() bool {
-	b, err := os.ReadFile(p.QuitSpotifyOnExit)
-	if err != nil {
-		return false // 默认：退出时重启 Spotify，不关闭
-	}
-	s := strings.TrimSpace(string(b))
-	return s == "1" || strings.EqualFold(s, "true")
-}
-
-func (p Paths) SaveQuitSpotifyOnExit(on bool) error {
-	return writeFlag(p.QuitSpotifyOnExit, on)
-}
-
-func (p Paths) LoadStartSpotifyOnLaunch() bool {
-	b, err := os.ReadFile(p.StartSpotifyOnLaunch)
-	if err != nil {
-		return false
-	}
-	s := strings.TrimSpace(string(b))
-	return s == "1" || strings.EqualFold(s, "true")
-}
-
-func (p Paths) SaveStartSpotifyOnLaunch(on bool) error {
-	return writeFlag(p.StartSpotifyOnLaunch, on)
-}
-
-func writeFlag(path string, on bool) error {
-	v := "0"
-	if on {
-		v = "1"
-	}
-	return os.WriteFile(path, []byte(v+"\n"), 0o644)
 }
 
 func (p Paths) IsOurProxy(port int) bool {

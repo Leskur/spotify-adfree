@@ -23,11 +23,7 @@ func New() (*App, error) {
 	if err != nil {
 		return nil, err
 	}
-	rulesPath, err := rules.ResolvePath(state)
-	if err != nil {
-		return nil, err
-	}
-	r, err := rules.Load(rulesPath)
+	r, err := rules.LoadDefault()
 	if err != nil {
 		return nil, err
 	}

@@ -18,9 +18,6 @@ import (
 
 const DefaultPort = 18513
 
-// Charles Rewrite：拨无效域名时的等待。
-const rewriteDialTimeout = 75 * time.Second
-
 type Server struct {
 	Addr  string
 	Rules *rules.Rules
@@ -130,11 +127,6 @@ func (s *Server) handleConnect(w http.ResponseWriter, r *http.Request) {
 			panic(http.ErrAbortHandler)
 		}
 
-		if redir := s.Rules.RedirectHost(hostname, path); redir != "" {
-			s.serveRewrite(rw, req, redir)
-			return
-		}
-
 		s.serveProxy(rw, req, hostname)
 	})
 
@@ -174,19 +166,6 @@ func (s *Server) serveProxy(rw http.ResponseWriter, req *http.Request, hostname 
 		panic(http.ErrAbortHandler)
 	}
 	proxy.ServeHTTP(rw, req)
-}
-
-func (s *Server) serveRewrite(rw http.ResponseWriter, req *http.Request, redirHost string) {
-	// 拨无效域名并等待，不回包 —— 让客户端自己超时
-	dialer := &net.Dialer{Timeout: rewriteDialTimeout}
-	conn, err := tls.DialWithDialer(dialer, "tcp", net.JoinHostPort(redirHost, "443"), &tls.Config{
-		ServerName: redirHost,
-	})
-	if err != nil {
-		panic(http.ErrAbortHandler)
-	}
-	_ = conn.Close()
-	panic(http.ErrAbortHandler)
 }
 
 func (s *Server) tlsCertFor(host string) (*tls.Certificate, error) {
