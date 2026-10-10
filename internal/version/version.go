@@ -2,7 +2,9 @@ package version
 
 const (
 	AppName     = "Spotify AdFree"
-	Version     = "0.0.1"
 	GitHubOwner = "Leskur"
 	GitHubRepo  = "spotify-adfree"
 )
+
+// Version 本地开发默认值；发版可由 -ldflags -X 注入。
+var Version = "0.0.1"

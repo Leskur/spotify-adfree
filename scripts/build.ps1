@@ -1,3 +1,7 @@
+param(
+    [string]$Version = ""
+)
+
 $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $PSScriptRoot
 Set-Location $root
@@ -12,6 +16,12 @@ if (-not (Test-Path $rsrc)) {
 
 New-Item -ItemType Directory -Force -Path (Join-Path $root "bin") | Out-Null
 
+$ldflags = "-s -w -H windowsgui"
+if ($Version -ne "") {
+    $ver = $Version.TrimStart("v", "V")
+    $ldflags = "$ldflags -X github.com/leskur/spotify-ad-free/internal/version.Version=$ver"
+}
+
 $out = "bin\Spotify AdFree.exe"
-go build -ldflags "-s -w -H windowsgui" -o $out .\cmd\spotify-ad-free
+go build -ldflags $ldflags -o $out .\cmd\spotify-ad-free
 Write-Host "built $out ($((Get-Item $out).Length) bytes)"
