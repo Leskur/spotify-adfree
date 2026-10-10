@@ -39,18 +39,16 @@ func onReady() {
 	systray.SetOnRClick(func(menu systray.IMenu) { _ = menu.ShowMenu() })
 	systray.SetOnClick(func(menu systray.IMenu) { _ = menu.ShowMenu() })
 
-	mSpotify := systray.AddMenuItem("设为 Spotify 代理", "")
-	mSpotify.Disable()
-	mProxy := systray.AddMenuItem("代理: —", "")
-	mProxy.Disable()
+	mBlockAds := systray.AddMenuItem("屏蔽广告", "")
+	mBlockAds.Disable()
 	systray.AddSeparator()
 	mSettings := systray.AddMenuItem("设置", "")
 	mStartSpotify := mSettings.AddSubMenuItem("启动时打开 Spotify", "")
 	mQuitSpotify := mSettings.AddSubMenuItem("退出时关闭 Spotify", "")
 	mAbout := systray.AddMenuItem("关于", "")
+	mCheckUpdate := mAbout.AddSubMenuItem("检查更新", "")
 	mVer := mAbout.AddSubMenuItem("版本 v"+version.Version, "")
 	mVer.Disable()
-	mCheckUpdate := mAbout.AddSubMenuItem("检查更新", "")
 	systray.AddSeparator()
 	mQuit := systray.AddMenuItem("退出", "")
 
@@ -63,9 +61,9 @@ func onReady() {
 
 	syncChecks := func() {
 		if a.SpotifyProxyManaged() {
-			mSpotify.Check()
+			mBlockAds.Check()
 		} else {
-			mSpotify.Uncheck()
+			mBlockAds.Uncheck()
 		}
 		if a.StartSpotifyOnLaunch() {
 			mStartSpotify.Check()
@@ -79,7 +77,7 @@ func onReady() {
 		}
 	}
 
-	mSpotify.Click(func() {
+	mBlockAds.Click(func() {
 		var err error
 		if a.SpotifyProxyManaged() {
 			err = a.DisableSpotifyProxy()
@@ -145,9 +143,7 @@ func onReady() {
 			systray.Quit()
 			return
 		}
-		mProxy.SetTitle(fmt.Sprintf("代理: %s", a.ProxyAddr()))
-		mSpotify.Enable()
-		systray.SetTooltip(fmt.Sprintf("%s — %s", version.AppName, a.ProxyAddr()))
+		mBlockAds.Enable()
 
 		if err := a.AfterStart(); err != nil {
 			ShowError(version.AppName, err.Error())
