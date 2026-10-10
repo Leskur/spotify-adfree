@@ -60,6 +60,7 @@ func (a *App) Start() error {
 
 	addr := net.JoinHostPort("127.0.0.1", fmt.Sprintf("%d", rewrite.DefaultPort))
 	rw := rewrite.NewServer(addr, a.Rules, a.ca)
+	rw.SimplifyLyrics.Store(a.paths.LoadLyricsSimplified())
 	if err := rw.Start(); err != nil {
 		return fmt.Errorf("无法监听代理端口")
 	}
@@ -124,6 +125,20 @@ func (a *App) StartSpotifyOnLaunch() bool {
 
 func (a *App) SetStartSpotifyOnLaunch(on bool) error {
 	return a.paths.SaveStartSpotifyOnLaunch(on)
+}
+
+func (a *App) LyricsSimplified() bool {
+	return a.paths.LoadLyricsSimplified()
+}
+
+func (a *App) SetLyricsSimplified(on bool) error {
+	if err := a.paths.SaveLyricsSimplified(on); err != nil {
+		return err
+	}
+	if a.Rewrite != nil {
+		a.Rewrite.SimplifyLyrics.Store(on)
+	}
+	return nil
 }
 
 func (a *App) Stop() error {

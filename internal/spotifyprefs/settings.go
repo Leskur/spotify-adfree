@@ -10,6 +10,7 @@ type Settings struct {
 	BlockAds             bool `json:"block_ads"`
 	StartSpotifyOnLaunch bool `json:"start_spotify_on_launch"`
 	QuitSpotifyOnExit    bool `json:"quit_spotify_on_exit"`
+	LyricsSimplified     bool `json:"lyrics_simplified"`
 }
 
 func (p Paths) settingsPath() string {
@@ -64,5 +65,15 @@ func (p Paths) LoadStartSpotifyOnLaunch() bool {
 func (p Paths) SaveStartSpotifyOnLaunch(on bool) error {
 	s := p.LoadSettings()
 	s.StartSpotifyOnLaunch = on
+	return p.SaveSettings(s)
+}
+
+func (p Paths) LoadLyricsSimplified() bool {
+	return p.LoadSettings().LyricsSimplified
+}
+
+func (p Paths) SaveLyricsSimplified(on bool) error {
+	s := p.LoadSettings()
+	s.LyricsSimplified = on
 	return p.SaveSettings(s)
 }

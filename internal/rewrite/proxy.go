@@ -8,10 +8,12 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"golang.org/x/net/http2"
 
+	"github.com/leskur/spotify-ad-free/internal/lyrics"
 	"github.com/leskur/spotify-ad-free/internal/rules"
 	"github.com/leskur/spotify-ad-free/internal/sysproxy"
 )
@@ -22,6 +24,8 @@ type Server struct {
 	Addr  string
 	Rules *rules.Rules
 	CA    *CA
+
+	SimplifyLyrics atomic.Bool
 
 	server    *http.Server
 	certMu    sync.Mutex
@@ -144,6 +148,7 @@ func (s *Server) handleConnect(w http.ResponseWriter, r *http.Request) {
 func (s *Server) serveProxy(rw http.ResponseWriter, req *http.Request, hostname string) {
 	target, _ := url.Parse("https://" + hostname)
 	listenPort := s.Port()
+	path := req.URL.Path
 	proxy := httputil.NewSingleHostReverseProxy(target)
 	proxy.Transport = &http.Transport{
 		Proxy: func(r *http.Request) (*url.URL, error) {
@@ -161,6 +166,9 @@ func (s *Server) serveProxy(rw http.ResponseWriter, req *http.Request, hostname 
 	proxy.Director = func(r *http.Request) {
 		originalDirector(r)
 		r.Host = hostname
+	}
+	if s.SimplifyLyrics.Load() && lyrics.IsColorLyricsPath(path) {
+		proxy.ModifyResponse = lyrics.SimplifyResponse
 	}
 	proxy.ErrorHandler = func(w http.ResponseWriter, r *http.Request, err error) {
 		panic(http.ErrAbortHandler)

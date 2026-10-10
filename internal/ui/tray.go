@@ -41,7 +41,8 @@ func onReady() {
 
 	mBlockAds := systray.AddMenuItem("屏蔽广告", "")
 	mBlockAds.Disable()
-	systray.AddSeparator()
+	mLyrics := systray.AddMenuItem("歌词", "")
+	mLyricsHans := mLyrics.AddSubMenuItem("简体中文", "")
 	mSettings := systray.AddMenuItem("设置", "")
 	mStartSpotify := mSettings.AddSubMenuItem("启动时打开 Spotify", "")
 	mQuitSpotify := mSettings.AddSubMenuItem("退出时关闭 Spotify", "")
@@ -65,6 +66,11 @@ func onReady() {
 		} else {
 			mBlockAds.Uncheck()
 		}
+		if a.LyricsSimplified() {
+			mLyricsHans.Check()
+		} else {
+			mLyricsHans.Uncheck()
+		}
 		if a.StartSpotifyOnLaunch() {
 			mStartSpotify.Check()
 		} else {
@@ -86,6 +92,13 @@ func onReady() {
 		}
 		if err != nil {
 			ShowError(version.AppName, err.Error())
+		}
+		syncChecks()
+	})
+	mLyricsHans.Click(func() {
+		next := !a.LyricsSimplified()
+		if err := a.SetLyricsSimplified(next); err != nil {
+			ShowError(version.AppName, "保存设置失败")
 		}
 		syncChecks()
 	})
