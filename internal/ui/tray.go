@@ -9,6 +9,7 @@ import (
 	"github.com/energye/systray"
 
 	"github.com/leskur/spotify-ad-free/internal/app"
+	"github.com/leskur/spotify-ad-free/internal/update"
 	"github.com/leskur/spotify-ad-free/internal/version"
 )
 
@@ -49,6 +50,7 @@ func onReady() {
 	mAbout := systray.AddMenuItem("关于", "")
 	mVer := mAbout.AddSubMenuItem("版本 v"+version.Version, "")
 	mVer.Disable()
+	mCheckUpdate := mAbout.AddSubMenuItem("检查更新", "")
 	systray.AddSeparator()
 	mQuit := systray.AddMenuItem("退出", "")
 
@@ -102,6 +104,27 @@ func onReady() {
 			ShowError(version.AppName, "保存设置失败")
 		}
 		syncChecks()
+	})
+	mCheckUpdate.Click(func() {
+		mCheckUpdate.Disable()
+		go func() {
+			defer mCheckUpdate.Enable()
+			res, err := update.Check()
+			if err != nil {
+				ShowError(version.AppName, err.Error())
+				return
+			}
+			if !res.Newer {
+				ShowInfo(version.AppName, "当前已是最新版本。\n版本 v"+res.Current)
+				return
+			}
+			msg := fmt.Sprintf("发现新版本 v%s（当前 v%s）。\n是否打开下载页面？", res.Latest, res.Current)
+			if AskYesNo(version.AppName, msg) {
+				if err := OpenURL(res.URL); err != nil {
+					ShowError(version.AppName, "无法打开下载页面")
+				}
+			}
+		}()
 	})
 	mQuit.Click(func() {
 		if err := a.Stop(); err != nil {
