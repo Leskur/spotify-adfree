@@ -2,7 +2,6 @@ package ui
 
 import (
 	_ "embed"
-	"fmt"
 	"os"
 	"time"
 
@@ -46,10 +45,7 @@ func onReady() {
 	mSettings := systray.AddMenuItem("设置", "")
 	mStartSpotify := mSettings.AddSubMenuItem("启动时打开 Spotify", "")
 	mQuitSpotify := mSettings.AddSubMenuItem("退出时关闭 Spotify", "")
-	mAbout := systray.AddMenuItem("关于", "")
-	mCheckUpdate := mAbout.AddSubMenuItem("检查更新", "")
-	mVer := mAbout.AddSubMenuItem("版本 v"+version.Version, "")
-	mVer.Disable()
+	mCheckUpdate := systray.AddMenuItem("检查更新", "")
 	systray.AddSeparator()
 	mQuit := systray.AddMenuItem("退出", "")
 
@@ -126,11 +122,10 @@ func onReady() {
 				return
 			}
 			if !res.Newer {
-				ShowInfo(version.AppName, "当前已是最新版本。\n版本 v"+res.Current)
+				ShowInfo(version.AppName, "当前已是最新版本。")
 				return
 			}
-			msg := fmt.Sprintf("发现新版本 v%s（当前 v%s）。\n是否打开下载页面？", res.Latest, res.Current)
-			if AskYesNo(version.AppName, msg) {
+			if AskYesNo(version.AppName, "发现新版本，是否打开下载页面？") {
 				if err := OpenURL(res.URL); err != nil {
 					ShowError(version.AppName, "无法打开下载页面")
 				}
